@@ -25,7 +25,6 @@ public class Transection implements Serializable {
     private String sender;
     private String receiver;
     private double amt;
-
     private String senderBank;
     private String receiverBank;
     LocalDateTime createdDate;
