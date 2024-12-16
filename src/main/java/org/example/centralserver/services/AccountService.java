@@ -23,10 +23,10 @@ public class AccountService {
     public Account getaccount(String id) throws AccountNotFoundException {
         return accountRepo.findByAccId(id).orElseThrow(() -> new AccountNotFoundException(id));
     }
-//    public Account updateaccount(Account account) {
-//
-//
-//    }
+
+    public Account getAccountByAccId(String accId) {
+        return accountRepo.findByAccId(accId).orElse(null);
+    }
 
 
 }

@@ -40,6 +40,10 @@ public class Transection implements Serializable {
             this.createdDate = createdDate;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public String getSender() {
         return sender;
     }

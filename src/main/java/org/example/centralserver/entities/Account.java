@@ -1,6 +1,7 @@
 package org.example.centralserver.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -31,6 +32,7 @@ public class Account implements Serializable {
     private double freq=0;//avg transections per day...
 
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) // Ensures consistent formatting
     private LocalDateTime lastTransaction=null;
     

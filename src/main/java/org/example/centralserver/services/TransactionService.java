@@ -2,6 +2,7 @@ package org.example.centralserver.services;
 
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.Transection;
+import org.example.centralserver.helper.AccountLoader;
 import org.example.centralserver.helper.GetAccounts;
 import org.example.centralserver.mapper.Bank1TransactionMapper;
 import org.example.centralserver.repo.AccountRepo;
@@ -24,6 +25,9 @@ public class TransactionService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private AccountLoader accountLoader;
+
 
     @Autowired
     private TransectionRepo transectionRepo;
@@ -38,12 +42,12 @@ public class TransactionService {
     private GetAccounts getAccounts;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    RedisService redisService;
 
     private final String bankApiUrl = "http://localhost:8080/transactions"; // Replace with actual API URL
 
     // Scheduled task to fetch and process transactions every 5 minutes
-    @Scheduled(fixedRate = 60000) //1min
+    @Scheduled(fixedRate = 60000) //1 min
     public void processTransactions() {
         System.out.println("Fetching transactions from bank API...");
 
@@ -52,6 +56,7 @@ public class TransactionService {
         List<Transection> transactions = bank1TransactionMapper.mapTransactions(response);
 
         for (Transection transaction : transactions) {
+            transectionRepo.save(transaction);
             processTransaction(transaction);
         }
     }
@@ -62,50 +67,40 @@ public class TransactionService {
         String receiver = transaction.getReceiver();
 
         // Process sender account
-        Account senderAccount = getAndUpdateAccount(sender, transaction);
+        Account senderAccount = accountLoader.loadAccountIntoRedis(sender, transaction);
 
         // Process receiver account
-        Account receiverAccount = getAndUpdateAccount(receiver, transaction);
+        Account receiverAccount = accountLoader.loadAccountIntoRedis(receiver, transaction);
 
         // Check for suspicious activity
         boolean isSenderSuspicious = checkSuspiciousAccount(senderAccount, transaction);
         boolean isReceiverSuspicious = checkSuspiciousAccount(receiverAccount, transaction);
 
-        // Save suspicious accounts and transactions to Redis, and others to MongoDB
-        if (isSenderSuspicious || isReceiverSuspicious || transaction.getAmt() > 500000) {
-            redisTemplate.opsForHash().put("suspicious_transactions", transaction.getId(), transaction);
-            redisTemplate.opsForHash().put("suspicious_accounts", senderAccount.getId(), senderAccount);
-            redisTemplate.opsForHash().put("suspicious_accounts", receiverAccount.getId(), receiverAccount);
+        //Save suspicious accounts and transactions to Redis, and others to MongoDB
+        if(transaction.getAmt() > 2000){
+            redisService.saveObject(transaction.getId(), transaction);
+        }
+        if (isSenderSuspicious || isReceiverSuspicious) {
+
         } else {
-            transectionRepo.save(transaction);
-            accountRepo.save(senderAccount);
-            accountRepo.save(receiverAccount);
-        }
-    }
+            redisService.deleteKey(sender);
+            redisService.deleteKey(receiver);
 
-    // Fetch account from Redis or database, update, and return
-    private Account getAndUpdateAccount(String accId, Transection transaction) {
-        Account account = (Account) redisTemplate.opsForHash().get("accounts", accId);
-
-        if (account == null) {
-            Optional<Account> optionalAccount = accountRepo.findByAccId(accId);
-            account = optionalAccount.orElseGet(() -> getAccounts.getAccount(accId));
-            redisTemplate.opsForHash().put("accounts", accId, account);
         }
 
-        // Update account details
-        account.setLastTransaction(transaction.getCreatedDate());
-        account.setFreq(account.getFreq() + 1);
 
-        return account;
+        accountRepo.save(senderAccount);
+        accountRepo.save(receiverAccount);
     }
+
+        // Fetch account from Redis or database, update, and return
 
     // Check if the account is suspicious based on the criteria
     private boolean checkSuspiciousAccount(Account account, Transection transaction) {
         boolean isSuspicious = false;
 
         // Check if frequency exceeds 50
-        if (account.getFreq() > 50) {
+        if (account.getFreq() > 10) {
             isSuspicious = true;
         }
 
