@@ -1,4 +1,4 @@
-package org.example.centralserver.repo;
+package org.example.centralserver.repo.mongo;
 
 import org.example.centralserver.entities.Transection;
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -1,15 +1,16 @@
 package org.example.centralserver.services;
 
 import org.example.centralserver.entities.Account;
+import org.example.centralserver.entities.AccountNeo4J;
 import org.example.centralserver.entities.Transection;
 import org.example.centralserver.helper.AccountLoader;
 import org.example.centralserver.helper.GetAccounts;
 import org.example.centralserver.mapper.Bank1TransactionMapper;
-import org.example.centralserver.repo.AccountRepo;
-import org.example.centralserver.repo.TransectionRepo;
-import org.example.centralserver.utils.RestClientConfig;
+import org.example.centralserver.repo.neo4j.AccountNeo4jRepository;
+import org.example.centralserver.repo.mongo.AccountRepo;
+import org.example.centralserver.repo.mongo.TransectionRepo;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,13 +18,18 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TransactionService {
 
+
+    private static ModelMapper modelMapper = new ModelMapper();
+
+
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private AccountNeo4jRepository accountNeo4jRepository;
 
     @Autowired
     private AccountLoader accountLoader;
@@ -88,6 +94,15 @@ public class TransactionService {
 
         }
 
+        AccountNeo4J senderAccountNeo4j=modelMapper.map(senderAccount, AccountNeo4J.class);
+        AccountNeo4J receiverAccountNeo4j=modelMapper.map(receiverAccount, AccountNeo4J.class);
+
+        accountNeo4jRepository.save(senderAccountNeo4j);
+        accountNeo4jRepository.save(receiverAccountNeo4j);
+
+
+        createTransactionRelationship(senderAccountNeo4j, receiverAccountNeo4j, transaction);
+
 
         accountRepo.save(senderAccount);
         accountRepo.save(receiverAccount);
@@ -113,5 +128,12 @@ public class TransactionService {
         }
 
         return isSuspicious;
+    }
+
+    private void createTransactionRelationship(AccountNeo4J sender, AccountNeo4J receiver, Transection transaction) {
+        // Define a relationship, e.g., "SENT"
+        sender.addTransactionTo(receiver, transaction);
+
+        accountNeo4jRepository.save(sender);
     }
 }

@@ -1,7 +1,7 @@
 package org.example.centralserver.services;
 
 import org.example.centralserver.entities.Account;
-import org.example.centralserver.repo.AccountRepo;
+import org.example.centralserver.repo.mongo.AccountRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

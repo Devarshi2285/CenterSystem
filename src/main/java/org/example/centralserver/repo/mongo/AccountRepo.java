@@ -1,4 +1,4 @@
-package org.example.centralserver.repo;
+package org.example.centralserver.repo.mongo;
 
 import org.example.centralserver.entities.Account;
 import org.springframework.data.mongodb.repository.MongoRepository;
