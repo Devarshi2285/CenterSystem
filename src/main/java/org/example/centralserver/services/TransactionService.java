@@ -82,11 +82,30 @@ public class TransactionService {
         boolean isSenderSuspicious = checkSuspiciousAccount(senderAccount, transaction);
         boolean isReceiverSuspicious = checkSuspiciousAccount(receiverAccount, transaction);
 
+        AccountNeo4J senderAccountNeo4j=modelMapper.map(senderAccount, AccountNeo4J.class);
+        AccountNeo4J receiverAccountNeo4j=modelMapper.map(receiverAccount, AccountNeo4J.class);
+
+
+
         //Save suspicious accounts and transactions to Redis, and others to MongoDB
         if(transaction.getAmt() > 2000){
             redisService.saveObject(transaction.getId(), transaction);
+
+            accountNeo4jRepository.save(senderAccountNeo4j);
+            accountNeo4jRepository.save(receiverAccountNeo4j);
+
+
+            createTransactionRelationship(senderAccountNeo4j, receiverAccountNeo4j, transaction);
+
+
         }
-        if (isSenderSuspicious || isReceiverSuspicious) {
+        else if (isSenderSuspicious || isReceiverSuspicious) {
+
+            accountNeo4jRepository.save(senderAccountNeo4j);
+            accountNeo4jRepository.save(receiverAccountNeo4j);
+
+            createTransactionRelationship(senderAccountNeo4j, receiverAccountNeo4j, transaction);
+
 
         } else {
             redisService.deleteKey(sender);
@@ -94,14 +113,6 @@ public class TransactionService {
 
         }
 
-        AccountNeo4J senderAccountNeo4j=modelMapper.map(senderAccount, AccountNeo4J.class);
-        AccountNeo4J receiverAccountNeo4j=modelMapper.map(receiverAccount, AccountNeo4J.class);
-
-        accountNeo4jRepository.save(senderAccountNeo4j);
-        accountNeo4jRepository.save(receiverAccountNeo4j);
-
-
-        createTransactionRelationship(senderAccountNeo4j, receiverAccountNeo4j, transaction);
 
 
         accountRepo.save(senderAccount);
