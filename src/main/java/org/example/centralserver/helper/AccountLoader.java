@@ -19,38 +19,33 @@ public class AccountLoader {
     @Autowired
     GetAccounts getAccounts;
 
-    public Account loadAccountIntoRedis(String accId , Transection transection){
-
+    public Account loadAccountIntoRedis(String accId, Transection transection, String bank) {
         try {
-
-
-            Account account = redisService.getObject(accId, Account.class);
+            String redisKey = bank + "_" + accId;
+            Account account = redisService.getObject(redisKey, Account.class);
 
             if (account == null) {
-                Account account1 = accountService.getAccountByAccId(accId);
-                if (account1 == null) {
-                    account1 = getAccounts.getAccount(accId);
+                account = accountService.getaccount(redisKey);
+                if (account == null) {
+                    account = getAccounts.getAccount(accId, bank);
+                    if (account == null) {
+                        throw new RuntimeException("Account not found in any service for accId: " + accId);
+                    }
                 }
-
-                account1.setLastTransaction(transection.getCreatedDate());
-                account1.setFreq(account1.getFreq() + 1);
-
-                redisService.saveObject(accId, account1);
-                return account1;
             }
 
+            // Update account details
             account.setLastTransaction(transection.getCreatedDate());
             account.setFreq(account.getFreq() + 1);
-            redisService.saveObject(accId, account);
+
+            // Save back to Redis
+            redisService.saveObject(redisKey, account);
             return account;
-
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error while loading account into Redis: " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 
 

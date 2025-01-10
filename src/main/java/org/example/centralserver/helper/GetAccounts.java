@@ -23,9 +23,9 @@ public class GetAccounts {
 
     private final String baseApiUrl = "http://localhost:8080/accounts/"; // Base API URL
 
-    public Account getAccount(String accountId) {
+    public Account getAccount(String accountId,String bank) {
         String requestUrl = baseApiUrl + accountId; // Construct URL dynamically
         Map<String, Object> accountData = restTemplate.getForObject(requestUrl, Map.class);
-        return bank1AccountMapper.mapAccount(accountData);
+        return bank1AccountMapper.mapAccount(accountData,bank);
     }
 }

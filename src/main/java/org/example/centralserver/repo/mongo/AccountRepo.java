@@ -7,6 +7,4 @@ import java.util.Optional;
 
 public interface AccountRepo extends MongoRepository<Account, String> {
 
-    Optional<Account> findByAccId(String accId);
-
 }

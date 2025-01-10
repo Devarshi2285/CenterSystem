@@ -11,7 +11,7 @@ import java.util.Map;
 public class Bank1AccountMapper {
 
     // Method to map a single account using the constructor
-    public Account mapAccount(Map<String, Object> accountData) {
+    public Account mapAccount(Map<String, Object> accountData ,String bank) {
         // Extract data from the response map
         String id = (String) accountData.get("id");
         String user = (String) accountData.get("user");
@@ -21,7 +21,7 @@ public class Bank1AccountMapper {
 
         // Using the constructor to create an Account object
         Account account = new Account(
-                id,
+                bank+"_"+id,
                 "1",                  // Hardcoded bank ID for now, set dynamically if needed
                 user,                 // User ID
                 nomineeIds     // List of nominee accounts

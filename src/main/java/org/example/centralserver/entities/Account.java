@@ -27,7 +27,6 @@ public class Account implements Serializable {
 
     @Id
     private String id;
-    private String accId;
     private String bank;
     private String user;
     private double freq=0;//avg transections per day...
@@ -43,8 +42,8 @@ public class Account implements Serializable {
 
     private List<String>nominees=new ArrayList<String>();
     public Account(){}
-    public Account( String accId, String bank, String user, List<String> nominees) {
-        this.accId = accId;
+    public Account( String id, String bank, String user, List<String> nominees) {
+        this.id = id;
         this.bank = bank;
         this.user = user;
         this.nominees = nominees;

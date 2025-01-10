@@ -20,13 +20,8 @@ public class AccountService {
     public Account addaccount(Account account) {
         return accountRepo.save(account);
     }
-    public Account getaccount(String id) throws AccountNotFoundException {
-        return accountRepo.findByAccId(id).orElseThrow(() -> new AccountNotFoundException(id));
+    public Account getaccount(String id) {
+        return accountRepo.findById(id).orElse(null);
     }
-
-    public Account getAccountByAccId(String accId) {
-        return accountRepo.findByAccId(accId).orElse(null);
-    }
-
 
 }
