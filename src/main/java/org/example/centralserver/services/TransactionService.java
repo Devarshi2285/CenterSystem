@@ -11,17 +11,23 @@ import org.example.centralserver.repo.mongo.AccountRepo;
 import org.example.centralserver.repo.mongo.TransectionRepo;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import static java.lang.Thread.sleep;
 
 @Service
 public class TransactionService {
 
+    private static final int BATCH_SIZE = 1000;
 
     private static ModelMapper modelMapper = new ModelMapper();
 
@@ -30,10 +36,6 @@ public class TransactionService {
     private RestTemplate restTemplate;
     @Autowired
     private AccountNeo4jRepository accountNeo4jRepository;
-
-    @Autowired
-    private AccountLoader accountLoader;
-
 
     @Autowired
     private TransectionRepo transectionRepo;
@@ -48,81 +50,44 @@ public class TransactionService {
     private GetAccounts getAccounts;
 
     @Autowired
+    TransactionProcessorService transactionProcessorService;
+
+    List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+    @Autowired
     RedisService redisService;
 
     private final String bankApiUrl = "http://localhost:8080/transactions"; // Replace with actual API URL
 
     // Scheduled task to fetch and process transactions every 5 minutes
-    @Scheduled(fixedRate = 60000) //1 min
-    public void processTransactions() {
+    @Scheduled(fixedRate = 6000000) //1 min
+    public void processTransactions() throws InterruptedException {
         System.out.println("Fetching transactions from bank API...");
 
         // Fetch transactions from the bank's API
         List<?> response = restTemplate.getForObject(bankApiUrl, List.class);
         List<Transection> transactions = bank1TransactionMapper.mapTransactions(response);
 
-        for (Transection transaction : transactions) {
-            transectionRepo.save(transaction);
-            processTransaction(transaction,"bank1");
-        }
 
-        loadIntoDb();
-    }
+        int totalTransactions = transactions.size();
+        int processedCount = 0;
 
-    // Process each transaction
-    private void processTransaction(Transection transaction,String bank) {
-        String sender = transaction.getSender();
-        String receiver = transaction.getReceiver();
+        while (processedCount < totalTransactions) {
+            List<CompletableFuture<Void>> batchFutures = new ArrayList<>();
 
-        // Process sender account
-        Account senderAccount = accountLoader.loadAccountIntoRedis(sender, transaction, bank);
-
-        // Process receiver account
-        Account receiverAccount = accountLoader.loadAccountIntoRedis(receiver, transaction, bank);
-
-        // Check for suspicious activity
-        boolean isSenderSuspicious = checkSuspiciousAccount(senderAccount, transaction);
-        boolean isReceiverSuspicious = checkSuspiciousAccount(receiverAccount, transaction);
-
-
-        //Save suspicious accounts and transactions to Redis, and others to MongoDB
-        if (transaction.getAmt() > 2000) {
-            senderAccount.setSuspicious(true);
-            receiverAccount.setSuspicious(true);
-            redisService.saveObject(bank + "_" + sender, senderAccount);
-            redisService.saveObject(bank + "_" + receiver, receiverAccount);
-            redisService.saveObject(transaction.getId(), transaction);
-
-            redisService.addToSet("accounts", bank + "_" + sender);
-            redisService.addToSet("accounts", bank + "_" + receiver);
-            redisService.addToSet("transaction", transaction.getId());
-        } else if (isSenderSuspicious || isReceiverSuspicious) {
-            senderAccount.setSuspicious(true);
-            receiverAccount.setSuspicious(true);
-            redisService.saveObject(bank + "_" + sender, senderAccount);
-            redisService.saveObject(bank + "_" + receiver, receiverAccount);
-        }
-    }
-
-    // Check if the account is suspicious based on the criteria
-    private boolean checkSuspiciousAccount(Account account, Transection transaction) {
-        boolean isSuspicious = false;
-
-        // Check if frequency exceeds 50
-        if (account.getFreq() > 10) {
-            isSuspicious = true;
-        }
-
-        // Check if the gap between last transaction and today is more than a year
-        if (account.getLastTransaction() != null) {
-            long yearsGap = ChronoUnit.YEARS.between(account.getLastTransaction(), LocalDateTime.now());
-            if (yearsGap > 1) {
-                isSuspicious = true;
+            // Process one batch
+            int endIndex = Math.min(processedCount + BATCH_SIZE, totalTransactions);
+            for (int i = processedCount; i < endIndex; i++) {
+                CompletableFuture<Void> future = transactionProcessorService.processTransactionAsync(transactions.get(i), "bank1");
+                batchFutures.add(future);
             }
-        }
 
-        return isSuspicious;
+            // Wait for batch completion
+            CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0])).join();
+            processedCount = endIndex;
+        }
     }
+
 
     private void createTransactionRelationship(AccountNeo4J sender, AccountNeo4J receiver, Transection transaction) {
         // Define a relationship, e.g., "SENT"

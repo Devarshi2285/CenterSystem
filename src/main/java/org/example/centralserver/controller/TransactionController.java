@@ -19,7 +19,7 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @GetMapping
-    public void fetchTransactions() {
+    public void fetchTransactions() throws InterruptedException {
         System.out.println("Fetching transactions");
         transactionService.processTransactions();
     }
