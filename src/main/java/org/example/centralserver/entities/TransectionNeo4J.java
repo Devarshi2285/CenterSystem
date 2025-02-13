@@ -20,11 +20,16 @@ public class TransectionNeo4J {
     @TargetNode
     private AccountNeo4J receiver;  // Specify the target node (Receiver in this case)
 
+    public TransectionNeo4J() {
+    }
+
     public TransectionNeo4J(Transection transection, AccountNeo4J receiver) {
-        System.out.println("Creating TransectionNeo4J edge");
+        if (transection == null) {
+            throw new IllegalArgumentException("Transection cannot be null");
+        }
         this.amount = transection.getAmt();
         this.timestamp = transection.getCreatedDate();
-        this.receiver = receiver;  // Set the receiver as part of the relationship
+        this.receiver = receiver;
     }
 
     // Getters and Setters

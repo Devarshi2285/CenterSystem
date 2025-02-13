@@ -1,4 +1,4 @@
-package org.example.centralserver.utils;
+package org.example.centralserver.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

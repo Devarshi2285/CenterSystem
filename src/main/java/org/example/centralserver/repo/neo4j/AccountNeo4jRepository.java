@@ -6,6 +6,6 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 
 public interface AccountNeo4jRepository extends Neo4jRepository<AccountNeo4J, String> {
 
-   AccountNeo4J findByAccId(String accId);
+   //AccountNeo4J findByAccId(String accId);
 
 }

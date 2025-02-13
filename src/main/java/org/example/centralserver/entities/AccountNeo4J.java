@@ -29,7 +29,6 @@ public class AccountNeo4J {
 
     @Id
     private String id;
-    private String accId;
     private String bank;
     private String user;
     private double freq=0;//avg transections per day...
@@ -50,7 +49,7 @@ public class AccountNeo4J {
     private List<String> nominees=new ArrayList<String>();
     public AccountNeo4J(){}
     public AccountNeo4J( String accId, String bank, String user, List<String> nominees) {
-        this.accId = accId;
+        this.id = accId;
         this.bank = bank;
         this.user = user;
         this.nominees = nominees;
@@ -77,10 +76,10 @@ public class AccountNeo4J {
     }
 
     public void addTransactionTo(AccountNeo4J receiver, Transection transaction) {
-        // Create the relationship between sender and receiver
-        System.out.println("adding edge");
-        TransectionNeo4J transectionNeo4J=new TransectionNeo4J(transaction,receiver);
+        if (receiver == null || transaction == null) {
+            throw new IllegalArgumentException("Receiver and transaction must not be null");
+        }
+        TransectionNeo4J transectionNeo4J = new TransectionNeo4J(transaction, receiver);
         this.transactions.add(transectionNeo4J);
-
     }
 }

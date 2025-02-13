@@ -27,8 +27,12 @@ public class Account implements Serializable {
 
     @Id
     private String id;
-    private String bank;
+    private String accountNumber;
+    private String type;
+    private String businessType;
+    private Double balance;
     private String user;
+
     private double freq=0;//avg transections per day...
 
 
@@ -41,10 +45,10 @@ public class Account implements Serializable {
     private boolean isSuspicious=false;
 
     private List<String>nominees=new ArrayList<String>();
+
     public Account(){}
     public Account( String id, String bank, String user, List<String> nominees) {
         this.id = id;
-        this.bank = bank;
         this.user = user;
         this.nominees = nominees;
     }
@@ -64,4 +68,5 @@ public class Account implements Serializable {
     public LocalDateTime getLastTransaction() {
         return lastTransaction;
     }
+
 }

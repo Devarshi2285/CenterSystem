@@ -22,33 +22,38 @@ public class Transection implements Serializable {
     @Id
     private String id; // MongoDB will handle this automatically
 
-    private String sender;
-    private String receiver;
+    private TransectionUser sender;
+    private TransectionUser receiver;
     private double amt;
-    private String senderBank;
-    private String receiverBank;
-    LocalDateTime createdDate;
+    private String type;
+    private String currency;
+    private String description;
+    private double balanceAfterTransection;
+    private LocalDateTime createdDate;
 
     // Let Spring Data automatically handle the creation date
 
-    public Transection(String sender, String receiver, Double amount, String number, String receiverBankId,LocalDateTime createdDate) {
-            this.sender = sender;
-            this.receiver = receiver;
-            this.amt = amount;
-            this.senderBank = number;
-            this.receiverBank = receiverBankId;
-            this.createdDate = createdDate;
+    public Transection(String id,TransectionUser sender, TransectionUser receiver, Double amount, String type, String currency,String description , Double balanceAfterTransection,LocalDateTime createdDate) {
+        this.id = id;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.amt = amount;
+        this.type = type;
+        this.currency = currency;
+        this.description = description;
+        this.balanceAfterTransection = balanceAfterTransection;
+        this.createdDate = createdDate;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getSender() {
+    public Object getSender() {
         return sender;
     }
 
-    public String getReceiver() {
+    public Object getReceiver() {
         return receiver;
     }
 
@@ -56,7 +61,8 @@ public class Transection implements Serializable {
         return createdDate;
     }
 
-
-
+    public double getAmt() {
+        return amt;
+    }
     // Optionally, you can add a method to handle your own logic for creation date if needed
 }

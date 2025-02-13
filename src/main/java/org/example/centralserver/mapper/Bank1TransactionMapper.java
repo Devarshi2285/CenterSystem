@@ -1,6 +1,7 @@
 package org.example.centralserver.mapper;
 
 import org.example.centralserver.entities.Transection;
+import org.example.centralserver.entities.TransectionUser;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.util.Map;
 @Component
 public class Bank1TransactionMapper implements BankTransactionMapper{
     @Override
-    public List<Transection> mapTransactions(List<?> bankData) {
+    public List<Transection> mapTransactions(List<?> bankData,String bank) {
         List<Transection> transactions = new ArrayList<>();
 
         for (Object obj : bankData) {
@@ -19,13 +20,15 @@ public class Bank1TransactionMapper implements BankTransactionMapper{
             Map<String, Object> data = (Map<String, Object>) obj;
 
             Transection transaction = new Transection(
-                    (String) data.get("sender"),
-                    (String) data.get("receiver"),
+                    bank+(String) data.get("id"),
+                    (TransectionUser) data.get("sender"),
+                    (TransectionUser) data.get("receiver"),
                     (Double) data.get("amount"),
-                    "1", // Hardcoded sender bank for now, update dynamically as needed
-                    (String) data.get("receiverBankId"),
+                    (String) data.get("type"),
+                    (String) data.get("currency"),
+                    (String) data.get("notes"),
+                    (Double) data.get("balanceAfterTransection"),
                     LocalDateTime.parse((String)data.get("createdAt"))
-
             );
 
             transactions.add(transaction);

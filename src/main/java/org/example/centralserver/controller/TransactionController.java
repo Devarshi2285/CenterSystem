@@ -2,6 +2,7 @@ package org.example.centralserver.controller;
 
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.centralserver.entities.Transection;
 import org.example.centralserver.services.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +20,8 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @GetMapping
-    public void fetchTransactions() throws InterruptedException {
+    public void fetchTransactions() throws InterruptedException, JsonProcessingException {
         System.out.println("Fetching transactions");
-        transactionService.processTransactions();
+        //transactionService.processTransactions();
     }
 }

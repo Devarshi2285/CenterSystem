@@ -19,8 +19,8 @@ public class TransactionProcessorService {
     @Async("taskExecutor")
     public CompletableFuture<Void> processTransactionAsync(Transection transaction, String bank) {
         try {
-            String sender = transaction.getSender();
-            String receiver = transaction.getReceiver();
+            Object sender = transaction.getSender();
+            Object receiver = transaction.getReceiver();
 
             System.out.println("Processing transaction " + transaction +
                     " on thread: " + Thread.currentThread().getName());
