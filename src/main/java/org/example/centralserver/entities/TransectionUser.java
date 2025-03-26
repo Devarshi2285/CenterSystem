@@ -6,9 +6,19 @@ public class TransectionUser {
 
     private User user;
     private Account account;
-    private String IFSC;
-    private String BankName;
-    private String BranchName;
+    private String ifsc;
+    private String bankName;
+    private String branchName;
+
+    public TransectionUser() {}
+
+    public TransectionUser(User user, Account account, String IFSC, String BankName, String BranchName) {
+        this.user = user;
+        this.account = account;
+        this.ifsc = IFSC;
+        this.bankName = BankName;
+        this.branchName = BranchName;
+    }
 
     public User getUser() {
         return user;
@@ -26,27 +36,27 @@ public class TransectionUser {
         this.account = account;
     }
 
-    public String getIFSC() {
-        return IFSC;
+    public String getIfsc() {
+        return ifsc;
     }
 
-    public void setIFSC(String IFSC) {
-        this.IFSC = IFSC;
+    public void setIfsc(String IFSC) {
+        this.ifsc = IFSC;
     }
 
     public String getBankName() {
-        return BankName;
+        return bankName;
     }
 
     public void setBankName(String bankName) {
-        BankName = bankName;
+        this.bankName = bankName;
     }
 
     public String getBranchName() {
-        return BranchName;
+        return branchName;
     }
 
     public void setBranchName(String branchName) {
-        BranchName = branchName;
+        this.branchName = branchName;
     }
 }

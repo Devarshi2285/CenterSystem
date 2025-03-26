@@ -3,6 +3,7 @@ package org.example.centralserver.helper;
 import lombok.extern.slf4j.Slf4j;
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.Transection;
+import org.example.centralserver.entities.TransectionUser;
 import org.example.centralserver.services.AccountService;
 import org.example.centralserver.services.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,22 +28,20 @@ public class AccountLoader {
 
     @Autowired
     private AccountService accountService;
+    
 
-    @Autowired
-    private GetAccounts getAccounts;
-
-    public Account loadAccountIntoRedis(Object acc, Transection transection, String bank) {
-        String lockKey = bank + "_" + acc.toString();
+    public Account loadAccountIntoRedis(TransectionUser acc, Transection transection, String bank , Boolean isSender) {
+        String lockKey = bank + "_" + acc.getAccount().getId();
         int attempts = 0;
 
-        String accId="0";
+        String accId=acc.getAccount().getId();
         while (attempts < MAX_RETRY_ATTEMPTS) {
             Lock accountLock = accountLocks.computeIfAbsent(lockKey, k -> new ReentrantLock(true)); // Fair locking
 
             try {
                 if (accountLock.tryLock(LOCK_TIMEOUT_MS, TimeUnit.MILLISECONDS)) {
                     try {
-                        return processAccount(lockKey, accId, transection, bank);
+                        return processAccount(lockKey, accId, transection, bank , isSender);
                     } finally {
                         accountLock.unlock();
                         // Clean up if no other threads are waiting
@@ -70,31 +69,27 @@ public class AccountLoader {
         throw new RuntimeException("Could not acquire lock for account: " + accId + " after " + MAX_RETRY_ATTEMPTS + " attempts");
     }
 
-    private Account processAccount(String redisKey, String accId, Transection transection, String bank) {
+    private Account processAccount(String redisKey, String accId, Transection transection, String bank , Boolean isSender) {
         // First try Redis
         Account account = redisService.getObject(redisKey, Account.class);
 
         // Batch fetch if not in Redis
         if (account == null) {
-            account = fetchAndCacheAccount(accId, bank, redisKey);
-        }
-
-        updateAccountDetails(account, transection, redisKey);
-        return account;
-    }
-
-    private Account fetchAndCacheAccount(String accId, String bank, String redisKey) {
-        Account account = accountService.getaccount(redisKey);
-        if (account == null) {
-            account = getAccounts.getAccount(accId, bank);
-            if (account == null) {
-                throw new RuntimeException("Account not found: " + accId);
+            TransectionUser transectionUser;
+            if(isSender){
+                transectionUser = (TransectionUser) transection.getSender();
             }
+           else {
+                transectionUser = (TransectionUser) transection.getReceiver();
+            }
+            account=transectionUser.getAccount();
         }
+
+        updateAccountDetails(account, transection, redisKey , isSender);
         return account;
     }
 
-    private void updateAccountDetails(Account account, Transection transection, String redisKey) {
+    private void updateAccountDetails(Account account, Transection transection, String redisKey , boolean isSender) {
 
         Long newFreq = redisService.increment(redisKey + ":freq");
         account.setFreq(newFreq.intValue());
@@ -108,7 +103,26 @@ public class AccountLoader {
 
         redisService.saveObject(redisKey, account);
         redisService.addToSet("accounts", redisKey);
+
+        TransectionUser user;
+
+        if(isSender){
+            user = (TransectionUser) transection.getSender();
+        }
+
+        else {
+           user = (TransectionUser) transection.getReceiver();
+        }
+        user.setAccount(account);
+
+        if (isSender){
+            transection.setSender(user);
+        }
+        else{
+            transection.setReceiver(user);
+        }
         System.out.println(transection.getId());
+
         redisService.saveObject(transection.getId(), transection);
 
         redisService.addToSet("transaction", transection.getId());

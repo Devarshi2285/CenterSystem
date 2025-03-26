@@ -9,7 +9,6 @@ import java.util.List;
 @Document("UserConfig")
 public class UserConfig {
 
-    @Id
     private String id;
     private String name;
     private String govIdNum;

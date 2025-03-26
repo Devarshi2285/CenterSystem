@@ -36,12 +36,19 @@ public class TransformData {
 
     @Autowired
     TransectionRepo transectionRepo;
-    public void convertAndProcessData(BankConfig bankConfig) {
 
-        System.out.println(bankConfig);
+    private boolean isEmptyConfig(String configValue) {
+        return configValue == null || configValue.isEmpty() || configValue.equalsIgnoreCase("none");
+    }
+
+
+    public List<Transection> convertAndProcessData(BankConfig bankConfig) {
+
+
         JsonNode rawTransaction = fetchRawData(bankConfig.getTransactionURI());
         List<Transection> transactions = processTransactions(bankConfig,rawTransaction);
-        transectionRepo.saveAll(transactions);
+
+        return transactions;
 
     }
     private JsonNode fetchRawData(String uri) {
@@ -75,7 +82,6 @@ public class TransformData {
         Transection Transection = new Transection();
         TransectionConfig txConfig = config.getTransactionConfig();
 
-        // Map basic transaction fields using configuration
         mapFields(Transection, rawData, Map.of(
                 "id", txConfig.getId(),
                 "amt", txConfig.getAmt(),
@@ -108,6 +114,7 @@ public class TransformData {
         TransectionUser TransectionUser = new TransectionUser();
         TransectionUserConfig userConfig = config.getTransectionUserConfig();
 
+        System.out.println(userConfig.toString());
         // Map party fields using configuration
         mapFields(TransectionUser, partyNode, Map.of(
                 "bankName", userConfig.getBankName(),
@@ -172,6 +179,14 @@ public class TransformData {
                 String targetField = mapping.getKey();
                 String sourcePath = mapping.getValue();
 
+                // Check if the config mapping is empty/null/none
+                if (isEmptyConfig(sourcePath)) {
+                    Field field = target.getClass().getDeclaredField(targetField);
+                    field.setAccessible(true);
+                    field.set(target, null);
+                    continue;
+                }
+
                 JsonNode valueNode = getNodeByPath(source, sourcePath);
                 if (valueNode != null && !valueNode.isNull()) {
                     Field field = target.getClass().getDeclaredField(targetField);
@@ -179,6 +194,11 @@ public class TransformData {
 
                     Object value = convertNodeToFieldType(valueNode, field.getType());
                     field.set(target, value);
+                } else {
+                    // If path exists in config but value not found in source, set null
+                    Field field = target.getClass().getDeclaredField(targetField);
+                    field.setAccessible(true);
+                    field.set(target, null);
                 }
             }
         } catch (Exception e) {
@@ -186,6 +206,7 @@ public class TransformData {
             throw new RuntimeException("Error mapping fields", e);
         }
     }
+
 
     /**
      * Converts JsonNode value to appropriate Java type

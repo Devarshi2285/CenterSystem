@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class AccountConfig {
 
 
-    @Id
     private String id;
     private String accountNumber;
     private String type;

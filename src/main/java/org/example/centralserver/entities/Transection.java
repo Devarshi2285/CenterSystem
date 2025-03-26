@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collation = "Transection")
+@Document(collection = "transections")
 public class Transection implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;

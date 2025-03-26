@@ -3,10 +3,8 @@ package org.example.centralserver.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serial;
@@ -47,18 +45,37 @@ public class Account implements Serializable {
     private List<String>nominees=new ArrayList<String>();
 
     public Account(){}
-    public Account( String id, String bank, String user, List<String> nominees) {
-        this.id = id;
+    public Account(String accountNumber, String type, String businessType, Double balance, String user) {
+        this.accountNumber = accountNumber;
+        this.type = type;
+        this.businessType = businessType;
+        this.balance = balance;
         this.user = user;
-        this.nominees = nominees;
     }
 
-    public void setFreq(double freq) {
-        this.freq = freq;
+
+    public String getId() {
+        return id;
     }
 
-    public void setLastTransaction(LocalDateTime lastTransaction) {
-        this.lastTransaction = lastTransaction;
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getBusinessType() {
+        return businessType;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public String getUser() {
+        return user;
     }
 
     public double getFreq() {
@@ -69,4 +86,63 @@ public class Account implements Serializable {
         return lastTransaction;
     }
 
+    public int getRegularIntervelTransection() {
+        return regularIntervelTransection;
+    }
+
+    public boolean isSuspicious() {
+        return isSuspicious;
+    }
+
+    public List<String> getNominees() {
+        return nominees;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setBusinessType(String businessType) {
+        this.businessType = businessType;
+    }
+
+    public void setBalance(Double balance) {
+        this.balance = balance;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public void setFreq(double freq) {
+        this.freq = freq;
+    }
+
+    public void setLastTransaction(LocalDateTime lastTransaction) {
+        this.lastTransaction = lastTransaction;
+    }
+
+    public void setRegularIntervelTransection(int regularIntervelTransection) {
+        this.regularIntervelTransection = regularIntervelTransection;
+    }
+
+    public void setSuspicious(boolean suspicious) {
+        isSuspicious = suspicious;
+    }
+
+    public void setNominees(List<String> nominees) {
+        this.nominees = nominees;
+    }
+
+    public boolean getSuspicious() {
+        return isSuspicious;
+    }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
+import java.util.List;
 
 @Service
 public class AccountService {
@@ -23,5 +24,6 @@ public class AccountService {
     public Account getaccount(String id) {
         return accountRepo.findById(id).orElse(null);
     }
+    public List<Account> getaccounts() { return accountRepo.findAll(); }
 
 }

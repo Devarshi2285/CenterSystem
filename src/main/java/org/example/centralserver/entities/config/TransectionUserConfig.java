@@ -47,6 +47,17 @@ public class TransectionUserConfig {
         this.ifsc = IFSC;
     }
 
+    @Override
+    public String toString() {
+        return "TransectionUserConfig{" +
+                "user='" + user + '\'' +
+                ", account='" + account + '\'' +
+                ", ifsc='" + ifsc + '\'' +
+                ", bankName='" + bankName + '\'' +
+                ", branchName='" + branchName + '\'' +
+                '}';
+    }
+
     public void setBankName(String bankName) {
         this.bankName = bankName;
     }

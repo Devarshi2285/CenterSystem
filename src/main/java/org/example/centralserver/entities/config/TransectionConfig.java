@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 
 @Document("TransectionConfig")
+
 public class TransectionConfig {
 
-    @Id
     private String id;
     private String sender;
     private String receiver;
@@ -20,6 +20,20 @@ public class TransectionConfig {
     private String description;
     private String balanceAfterTransection;
     private String createdDate;
+
+    public TransectionConfig() {}
+    public TransectionConfig(String id, String sender, String receiver, String amt, String type, String currency, String description, String balanceAfterTransection , String createdDate) {
+        this.id = id;
+        this.sender = sender;
+        this.receiver = receiver;
+        this.amt = amt;
+        this.type = type;
+        this.currency = currency;
+        this.description = description;
+        this.balanceAfterTransection = balanceAfterTransection;
+        this.createdDate = createdDate;
+    }
+
     public String getId() {
         return id;
     }
@@ -90,5 +104,9 @@ public class TransectionConfig {
 
     public void setCreatedDate(String createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public String toString() {
+        return this.id+this.sender+this.receiver+this.amt+this.type+this.currency+this.description+this.balanceAfterTransection+this.createdDate;
     }
 }
