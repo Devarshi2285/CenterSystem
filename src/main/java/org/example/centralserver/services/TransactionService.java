@@ -4,21 +4,22 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.Transection;
 import org.example.centralserver.entities.TransectionUser;
+import org.example.centralserver.entities.User;
 import org.example.centralserver.entities.config.BankConfig;
 import org.example.centralserver.entities.neo4j.AccountNode;
 import org.example.centralserver.entities.neo4j.TransactionRelationship;
 import org.example.centralserver.repo.mongo.AccountRepo;
 import org.example.centralserver.repo.mongo.TransectionRepo;
+import org.example.centralserver.repo.mongo.UserRepo;
 import org.example.centralserver.repo.neo4j.AccountNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static java.lang.Thread.sleep;
@@ -47,9 +48,11 @@ public class TransactionService {
     private AccountRepo accountRepo;
     @Autowired
     private AccountNodeRepository accountNodeRepo;
+    @Autowired
+    private UserRepo userRepo;
 
-    // Scheduled task to fetch and process transactions every 5 minutes
-    @Scheduled(fixedRate = 6000000) //1 min
+
+    @Scheduled(fixedRate = 6000000)
     public void processTransactions() throws InterruptedException, JsonProcessingException {
         System.out.println("Fetching transactions from bank API...");
 
@@ -60,14 +63,25 @@ public class TransactionService {
         List<List<Transection>>allTransactions = new ArrayList<>();
 
         banks.forEach(bankConfig -> {
-            List<Transection> transectionList=transformData.convertAndProcessData(bankConfig);
-            allTransactions.add(transectionList);
+            if(Objects.equals(bankConfig.getDatabaseStructure(), "NOSQL")) {
+                List<Transection> transectionList = transformData.convertAndProcessData(bankConfig);
+                allTransactions.add(transectionList);
+            }
+
+            else {
+
+                List<Transection> transectionList = transformData.convertAndProcessData(bankConfig);
+
+            }
+
         });
 
 
         for (List<Transection> transectionList : allTransactions) {
             int totalTransactions = transectionList.size();
             int processedCount = 0;
+
+            //replace by with chunk
 
             while (processedCount < totalTransactions) {
                 List<CompletableFuture<Void>> batchFutures = new ArrayList<>();
@@ -103,10 +117,6 @@ public class TransactionService {
                 Account account = redisService.getObject(accountKey.toString(), Account.class);
 
 
-
-
-
-
                 Optional<AccountNode> existingAccountNode = accountNodeRepo.findByAccountNumber(account.getAccountNumber());
 
 
@@ -139,6 +149,8 @@ public class TransactionService {
                 accountNodeRepo.save(accountNode);
 
                 // Also save the original account
+
+
                 accountRepo.save(account);
             }
         }
@@ -170,8 +182,30 @@ public class TransactionService {
                 senderNode.getOutgoingTransactions().add(transactionEdge);
 
 
-                // Save only the sender node, it will also save the relationship
+//                String url = "http://localhost:5000/predict"; // Flask running locally
+//
+//                RestTemplate restTemplate = new RestTemplate();
+//                Map<String, Object> request = new HashMap<>();
+//                request.put("features", transaction);
+//
+//                ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+//
+//                System.out.println(Objects.requireNonNull(response.getBody()).get("prediction").toString());
+
+
                 accountNodeRepo.save(senderNode);
+
+                User senderuser=sender.getUser();
+                User reciveruser=receiver.getUser();
+
+                Account senderacc=sender.getAccount();
+                Account receiveracc=receiver.getAccount();
+
+                senderacc.setUserclass(senderuser);
+                receiveracc.setUserclass(reciveruser);
+
+                accountRepo.save(senderacc);
+                accountRepo.save(receiveracc);
 
                 transectionRepo.save(transaction);
             }

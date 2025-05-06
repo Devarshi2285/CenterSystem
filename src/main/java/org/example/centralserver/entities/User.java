@@ -1,10 +1,12 @@
 package org.example.centralserver.entities;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Document(collection = "users")
 public class User {
 
 
@@ -53,4 +55,36 @@ public class User {
     public String getIdType() { return idType; }
     public String getAddress() { return address; }
     public List<String> getAccounts() { return accounts; }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setGovIdNum(String govIdNum) {
+        this.govIdNum = govIdNum;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public void setIdType(String idType) {
+        this.idType = idType;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setAccounts(List<String> accounts) {
+        this.accounts = accounts;
+    }
 }

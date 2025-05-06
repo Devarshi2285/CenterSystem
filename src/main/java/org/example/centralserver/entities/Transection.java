@@ -30,7 +30,7 @@ public class Transection implements Serializable {
     private String description;
     private double balanceAfterTransection;
     private LocalDateTime createdDate;
-
+    private Boolean suspicious=false;
     // Let Spring Data automatically handle the creation date
 
     public Transection(String id,TransectionUser sender, TransectionUser receiver, Double amount, String type, String currency,String description , Double balanceAfterTransection,LocalDateTime createdDate) {
@@ -63,6 +63,14 @@ public class Transection implements Serializable {
 
     public double getAmt() {
         return amt;
+    }
+
+    public Boolean getSuspicious() {
+        return suspicious;
+    }
+
+    public void setSuspicious(Boolean suspicious) {
+        this.suspicious = suspicious;
     }
     // Optionally, you can add a method to handle your own logic for creation date if needed
 }

@@ -34,6 +34,9 @@ public class AccountLoader {
         String lockKey = bank + "_" + acc.getAccount().getId();
         int attempts = 0;
 
+
+        //storing log of skipped transaction
+
         String accId=acc.getAccount().getId();
         while (attempts < MAX_RETRY_ATTEMPTS) {
             Lock accountLock = accountLocks.computeIfAbsent(lockKey, k -> new ReentrantLock(true)); // Fair locking
@@ -97,10 +100,14 @@ public class AccountLoader {
         account.setLastTransaction(transection.getCreatedDate());
 
 
-        if (transection.getAmt() > 5000 || account.getFreq() > 10) {
+        if (transection.getAmt() > 5000 ) {
+            transection.setSuspicious(true);
             account.setSuspicious(true);
         }
 
+        if(account.getFreq() > 10 ){
+            account.setSuspicious(true);
+        }
         redisService.saveObject(redisKey, account);
         redisService.addToSet("accounts", redisKey);
 

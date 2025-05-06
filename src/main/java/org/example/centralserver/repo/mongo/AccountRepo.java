@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface AccountRepo extends MongoRepository<Account, String> {
 
+    long countByIsSuspiciousTrue();
 }

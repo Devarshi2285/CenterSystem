@@ -42,6 +42,9 @@ public class Account implements Serializable {
     //let's say every day at 2 pm so this will incresee
     private boolean isSuspicious=false;
 
+    private User userclass;
+
+
     private List<String>nominees=new ArrayList<String>();
 
     public Account(){}
@@ -144,5 +147,14 @@ public class Account implements Serializable {
 
     public boolean getSuspicious() {
         return isSuspicious;
+    }
+
+
+    public User getUserclass() {
+        return userclass;
+    }
+
+    public void setUserclass(User userclass) {
+        this.userclass = userclass;
     }
 }
