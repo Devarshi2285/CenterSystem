@@ -5,11 +5,10 @@ import java.time.LocalDateTime;
 public class AccountDTO {
 
     private String accountNumber;
-    private String username;
     private double balance;
     private double frequency;
     private LocalDateTime lastTransaction;
-    private Boolean isSuspicious;
+    private double suspiciousScore;
     public AccountDTO() {}
 
 
@@ -19,14 +18,6 @@ public class AccountDTO {
 
     public void setAccountNumber(String accountNumber) {
         this.accountNumber = accountNumber;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public double getBalance() {
@@ -53,11 +44,10 @@ public class AccountDTO {
         this.lastTransaction = lastTransaction;
     }
 
-    public Boolean getSuspicious() {
-        return isSuspicious;
+    public double getSuspiciousScore() {
+        return suspiciousScore;
     }
-
-    public void setSuspicious(Boolean suspicious) {
-        isSuspicious = suspicious;
+    public void setSuspiciousScore(double suspiciousScore) {
+        this.suspiciousScore = suspiciousScore;
     }
 }

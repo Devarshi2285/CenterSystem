@@ -45,7 +45,7 @@ public class AccountController {
             AccountDTO accountDTO=new AccountDTO();
             accountDTO.setAccountNumber(account.getAccountNumber());
             accountDTO.setFrequency(account.getFreq());
-            accountDTO.setSuspicious(account.getSuspicious());
+            accountDTO.setSuspiciousScore(account.getSuspiciousScore());
             accountDTO.setLastTransaction(account.getLastTransaction());
 
             accountDTOS.add(accountDTO);
@@ -55,18 +55,6 @@ public class AccountController {
         return ResponseEntity.ok(accountDTOS);
 
 
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> testAcc() {
-        String url = "https://frauddetection-r211.onrender.com/api/test"; // Replace with actual URL
-
-
-        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-        response.getBody();
-
-
-        return ResponseEntity.ok("Accounts updated with fraud scores");
     }
 
 }
