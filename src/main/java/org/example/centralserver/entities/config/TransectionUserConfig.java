@@ -1,8 +1,5 @@
 package org.example.centralserver.entities.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.example.centralserver.entities.Account;
-import org.example.centralserver.entities.User;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 

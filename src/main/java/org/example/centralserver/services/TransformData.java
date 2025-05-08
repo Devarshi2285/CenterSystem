@@ -4,12 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.Transection;
-import org.example.centralserver.entities.TransectionUser;
-import org.example.centralserver.entities.User;
-import org.example.centralserver.entities.config.*;
+import org.example.centralserver.entities.config.BankConfig;
+import org.example.centralserver.entities.config.TransectionConfig;
 import org.example.centralserver.repo.mongo.BankConfigRepo;
 import org.example.centralserver.repo.mongo.TransectionRepo;
-import org.neo4j.driver.TransactionConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -28,6 +26,7 @@ public class TransformData {
 
     @Autowired
     BankConfigRepo bankConfigRepo;
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -41,28 +40,22 @@ public class TransformData {
         return configValue == null || configValue.isEmpty() || configValue.equalsIgnoreCase("none");
     }
 
-
-    public List<Transection> convertAndProcessData(BankConfig bankConfig) {
-
-
-        JsonNode rawTransaction = fetchRawData(bankConfig.getTransactionURI());
-        List<Transection> transactions = processTransactions(bankConfig,rawTransaction);
-
-        return transactions;
-
-    }
-    private JsonNode fetchRawData(String uri) {
-        try {
-            String response = restTemplate.getForObject(uri, String.class);
-            return objectMapper.readTree(response);
-        } catch (Exception e) {
-            System.out.println(e);
-            throw new RuntimeException("Error fetching data", e);
+        public List<Transection> convertAndProcessData(BankConfig bankConfig) {
+            JsonNode rawTransaction = fetchRawData(bankConfig.getTransactionURI()).get("transactions");
+            return processTransactions(bankConfig, rawTransaction);
         }
-    }
+
+        private JsonNode fetchRawData(String uri) {
+            try {
+                String response = restTemplate.getForObject(uri, String.class);
+                return objectMapper.readTree(response);
+            } catch (Exception e) {
+                System.out.println(e);
+                throw new RuntimeException("Error fetching data", e);
+            }
+        }
 
     public List<Transection> processTransactions(BankConfig config, JsonNode rawData) {
-
         List<Transection> transformedTransactions = new ArrayList<>();
 
         if (rawData.isArray()) {
@@ -79,95 +72,40 @@ public class TransformData {
     }
 
     private Transection transformTransaction(JsonNode rawData, BankConfig config) {
-        Transection Transection = new Transection();
+        Transection transection = new Transection();
         TransectionConfig txConfig = config.getTransactionConfig();
 
-        mapFields(Transection, rawData, Map.of(
-                "id", txConfig.getId(),
+        // Map basic transaction fields
+        mapFields(transection, rawData, Map.of(
+                "id",txConfig.getId(),
                 "amt", txConfig.getAmt(),
                 "currency", txConfig.getCurrency(),
-                "type", txConfig.getType(),
                 "description", txConfig.getDescription(),
-                "balanceAfterTransection", txConfig.getBalanceAfterTransection(),
                 "createdDate", txConfig.getCreatedDate()
         ));
 
-        // Transform sender and receiver
+        // Set sender and receiver as simple strings (account numbers or identifiers)
         String senderPath = txConfig.getSender();
         String receiverPath = txConfig.getReceiver();
 
-        JsonNode senderNode = getNodeByPath(rawData, senderPath);
-        JsonNode receiverNode = getNodeByPath(rawData, receiverPath);
-
-        if (senderNode != null) {
-            Transection.setSender(transformParty(senderNode, config));
+        if (!isEmptyConfig(senderPath)) {
+            String sender = getValueByPath(rawData, senderPath);
+            Account senderAccount=new Account(sender,bankConfig.getBankId() , sender);
+            senderAccount.setBankId(bankConfig.getBankId());
+            transection.setSender(senderAccount);
         }
 
-        if (receiverNode != null) {
-            Transection.setReceiver(transformParty(receiverNode, config));
+        if (!isEmptyConfig(receiverPath)) {
+            String receiver = getValueByPath(rawData, receiverPath);
+            Account receiverAccount=new Account(receiver,bankConfig.getBankId() , receiver);
+            receiverAccount.setBankId(bankConfig.getBankId());
+            transection.setReceiver(receiverAccount);
         }
 
-        return Transection;
-    }
+        // Set suspicious flag default to false
+        transection.setSuspicious(false);
 
-    private TransectionUser transformParty(JsonNode partyNode, BankConfig config) {
-        TransectionUser TransectionUser = new TransectionUser();
-        TransectionUserConfig userConfig = config.getTransectionUserConfig();
-
-        System.out.println(userConfig.toString());
-        // Map party fields using configuration
-        mapFields(TransectionUser, partyNode, Map.of(
-                "bankName", userConfig.getBankName(),
-                "ifsc", userConfig.getIfsc(),
-                "branchName", userConfig.getBranchName()
-        ));
-
-        // Transform nested user data
-        JsonNode userNode = getNodeByPath(partyNode, userConfig.getUser());
-        if (userNode != null) {
-            TransectionUser.setUser(transformUser(userNode, config.getUserConfig()));
-        }
-
-        // Transform nested account data
-        JsonNode accountNode = getNodeByPath(partyNode, userConfig.getAccount());
-        if (accountNode != null) {
-            TransectionUser.setAccount(transformAccount(accountNode, config.getAccountConfig()));
-        }
-
-        return TransectionUser;
-    }
-
-    private User transformUser(JsonNode userNode, UserConfig config) {
-        User User = new User();
-
-        // Map user fields using configuration
-        mapFields(User, userNode, Map.of(
-                "id", config.getId(),
-                "name", config.getName(),
-                "govIdNum", config.getGovIdNum(),
-                "email", config.getEmail(),
-                "mobileNumber", config.getMobileNumber(),
-                "idType", config.getIdType(),
-                "address", config.getAddress()
-        ));
-
-        return User;
-    }
-
-    private Account transformAccount(JsonNode accountNode, AccountConfig config) {
-        Account Account = new Account();
-
-        // Map account fields using configuration
-        mapFields(Account, accountNode, Map.of(
-                "id", config.getId(),
-                "balance", config.getBalance(),
-                "accountNumber",config.getAccountNumber(),
-                "type", config.getType(),
-                "user", config.getUser(),
-                "nominees",config.getNominees()
-        ));
-
-        return Account;
+        return transection;
     }
 
     /**
@@ -206,7 +144,6 @@ public class TransformData {
             throw new RuntimeException("Error mapping fields", e);
         }
     }
-
 
     /**
      * Converts JsonNode value to appropriate Java type

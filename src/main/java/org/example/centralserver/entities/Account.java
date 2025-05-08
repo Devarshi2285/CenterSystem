@@ -2,6 +2,7 @@ package org.example.centralserver.entities;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,6 +19,7 @@ import java.util.List;
 @Getter
 @Setter
 @Document("accounts")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Account implements Serializable {
 
     @Serial
@@ -26,12 +28,8 @@ public class Account implements Serializable {
     @Id
     private String id;
     private String accountNumber;
-    private String type;
-    private String businessType;
-    private Double balance;
-    private String user;
 
-    private double freq=0;//avg transections per day...
+    private double freq=0;
 
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -39,21 +37,16 @@ public class Account implements Serializable {
     private LocalDateTime lastTransaction=null;
     
     private int regularIntervelTransection=0;
-    //let's say every day at 2 pm so this will incresee
     private boolean isSuspicious=false;
+    private double suspiciousScore=0.0;
+    private String bankId;
 
-    private User userclass;
-
-
-    private List<String>nominees=new ArrayList<String>();
 
     public Account(){}
-    public Account(String accountNumber, String type, String businessType, Double balance, String user) {
+    public Account(String accountNumber , String bankId ,String id) {
+        this.id = id;
         this.accountNumber = accountNumber;
-        this.type = type;
-        this.businessType = businessType;
-        this.balance = balance;
-        this.user = user;
+        this.bankId = bankId;
     }
 
 
@@ -65,20 +58,9 @@ public class Account implements Serializable {
         return accountNumber;
     }
 
-    public String getType() {
-        return type;
-    }
 
-    public String getBusinessType() {
-        return businessType;
-    }
-
-    public Double getBalance() {
-        return balance;
-    }
-
-    public String getUser() {
-        return user;
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
     }
 
     public double getFreq() {
@@ -93,13 +75,7 @@ public class Account implements Serializable {
         return regularIntervelTransection;
     }
 
-    public boolean isSuspicious() {
-        return isSuspicious;
-    }
 
-    public List<String> getNominees() {
-        return nominees;
-    }
 
     public void setId(String id) {
         this.id = id;
@@ -109,21 +85,7 @@ public class Account implements Serializable {
         this.accountNumber = accountNumber;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 
-    public void setBusinessType(String businessType) {
-        this.businessType = businessType;
-    }
-
-    public void setBalance(Double balance) {
-        this.balance = balance;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
 
     public void setFreq(double freq) {
         this.freq = freq;
@@ -141,20 +103,20 @@ public class Account implements Serializable {
         isSuspicious = suspicious;
     }
 
-    public void setNominees(List<String> nominees) {
-        this.nominees = nominees;
-    }
-
     public boolean getSuspicious() {
         return isSuspicious;
     }
 
-
-    public User getUserclass() {
-        return userclass;
+    public String getBankId() {
+        return bankId;
     }
 
-    public void setUserclass(User userclass) {
-        this.userclass = userclass;
+    public double getSuspiciousScore() {
+        return suspiciousScore;
     }
+
+    public void setSuspiciousScore(double suspiciousScore) {
+        this.suspiciousScore = suspiciousScore;
+    }
+
 }

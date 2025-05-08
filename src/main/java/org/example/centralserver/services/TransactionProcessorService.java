@@ -4,7 +4,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.Transection;
-import org.example.centralserver.entities.TransectionUser;
 import org.example.centralserver.helper.AccountLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -21,15 +20,17 @@ public class TransactionProcessorService {
     public CompletableFuture<Void> processTransactionAsync(Transection transaction, String bank) {
         try {
 
-            TransectionUser sender= (TransectionUser) transaction.getSender();
-            TransectionUser receiver = (TransectionUser) transaction.getReceiver();
+
 
             System.out.println("Processing transaction " + transaction +
                     " on thread: " + Thread.currentThread().getName());
 
 
-            Account senderAccount = accountLoader.loadAccountIntoRedis(sender, transaction, bank,true);
-            Account receiverAccount = accountLoader.loadAccountIntoRedis(receiver, transaction, bank,false);
+            Account senderAccount = (Account) transaction.getSender();
+            senderAccount=accountLoader.loadAccountIntoRedis(senderAccount,transaction,bank,true);
+            Account receiverAccount = (Account) transaction.getReceiver();
+            receiverAccount = accountLoader.loadAccountIntoRedis(receiverAccount, transaction, bank,false);
+
 
 
             return CompletableFuture.completedFuture(null);

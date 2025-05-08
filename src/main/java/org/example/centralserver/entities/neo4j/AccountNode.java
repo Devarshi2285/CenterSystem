@@ -16,12 +16,14 @@ public class AccountNode {
     private Long id;
 
     private String accountNumber;
-    private String type;
-    private Double balance;
-    private String user;
     private Integer freq;
     private Integer regularIntervalTransaction;
     private Boolean isSuspicious;
+
+    private String bankId;
+
+    private double suspiciousScore=0.0;
+
 
     @Relationship(type = "TRANSACTS_WITH", direction = Relationship.Direction.OUTGOING)
     private Set<TransactionRelationship> outgoingTransactions = new HashSet<>();
@@ -48,28 +50,12 @@ public class AccountNode {
         this.accountNumber = accountNumber;
     }
 
-    public String getType() {
-        return type;
+    public String getBankId() {
+        return bankId;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Double balance) {
-        this.balance = balance;
-    }
-
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
+    public void setBankId(String bankId) {
+        this.bankId = bankId;
     }
 
     public Integer getFreq() {

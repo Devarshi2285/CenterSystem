@@ -1,11 +1,6 @@
 package org.example.centralserver.entities.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.example.centralserver.entities.TransectionUser;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
 
 @Document("TransectionConfig")
 
@@ -15,22 +10,18 @@ public class TransectionConfig {
     private String sender;
     private String receiver;
     private String amt;
-    private String type;
     private String currency;
     private String description;
-    private String balanceAfterTransection;
     private String createdDate;
 
     public TransectionConfig() {}
-    public TransectionConfig(String id, String sender, String receiver, String amt, String type, String currency, String description, String balanceAfterTransection , String createdDate) {
+    public TransectionConfig(String id, String sender, String receiver, String amt, String currency, String description , String createdDate) {
         this.id = id;
         this.sender = sender;
         this.receiver = receiver;
         this.amt = amt;
-        this.type = type;
         this.currency = currency;
         this.description = description;
-        this.balanceAfterTransection = balanceAfterTransection;
         this.createdDate = createdDate;
     }
 
@@ -50,9 +41,7 @@ public class TransectionConfig {
         return amt;
     }
 
-    public String getType() {
-        return type;
-    }
+
 
     public String getCurrency() {
         return currency;
@@ -62,9 +51,6 @@ public class TransectionConfig {
         return description;
     }
 
-    public String getBalanceAfterTransection() {
-        return balanceAfterTransection;
-    }
 
     public String getCreatedDate() {
         return createdDate;
@@ -86,9 +72,6 @@ public class TransectionConfig {
         this.amt = amt;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 
     public void setCurrency(String currency) {
         this.currency = currency;
@@ -98,15 +81,11 @@ public class TransectionConfig {
         this.description = description;
     }
 
-    public void setBalanceAfterTransection(String balanceAfterTransection) {
-        this.balanceAfterTransection = balanceAfterTransection;
-    }
-
     public void setCreatedDate(String createdDate) {
         this.createdDate = createdDate;
     }
 
     public String toString() {
-        return this.id+this.sender+this.receiver+this.amt+this.type+this.currency+this.description+this.balanceAfterTransection+this.createdDate;
+        return this.id+this.sender+this.receiver+this.amt+this.currency+this.description+this.createdDate;
     }
 }

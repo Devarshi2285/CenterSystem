@@ -2,7 +2,6 @@ package org.example.centralserver.controller;
 
 import org.example.centralserver.entities.Account;
 import org.example.centralserver.entities.DTO.AccountDTO;
-import org.example.centralserver.entities.User;
 import org.example.centralserver.repo.mongo.AccountRepo;
 import org.example.centralserver.services.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +38,8 @@ public class AccountController {
 
             AccountDTO accountDTO=new AccountDTO();
             accountDTO.setAccountNumber(account.getAccountNumber());
-            accountDTO.setBalance(account.getBalance());
             accountDTO.setFrequency(account.getFreq());
             accountDTO.setSuspicious(account.getSuspicious());
-            User user=(User)account.getUserclass();
-            accountDTO.setUsername(user.getName());
             accountDTO.setLastTransaction(account.getLastTransaction());
 
             accountDTOS.add(accountDTO);

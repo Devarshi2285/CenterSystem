@@ -24,7 +24,7 @@ public class TransactionController {
     private TransectionRepo transectionRepo;
 
     @GetMapping
-    public void fetchTransactions() throws InterruptedException, JsonProcessingException {
+    public void fetchTransactions() throws Exception {
         System.out.println("Fetching transactions");
         transactionService.processTransactions();
     }

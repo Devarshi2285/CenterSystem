@@ -1,10 +1,8 @@
 package org.example.centralserver.entities;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -22,18 +20,17 @@ public class Transection implements Serializable {
     @Id
     private String id; // MongoDB will handle this automatically
 
-    private TransectionUser sender;
-    private TransectionUser receiver;
+    private Account sender;
+    private Account receiver;
     private double amt;
     private String type;
     private String currency;
     private String description;
-    private double balanceAfterTransection;
     private LocalDateTime createdDate;
     private Boolean suspicious=false;
     // Let Spring Data automatically handle the creation date
 
-    public Transection(String id,TransectionUser sender, TransectionUser receiver, Double amount, String type, String currency,String description , Double balanceAfterTransection,LocalDateTime createdDate) {
+    public Transection(String id,Account sender, Account receiver, Double amount, String type, String currency,String description , Double balanceAfterTransection,LocalDateTime createdDate) {
         this.id = id;
         this.sender = sender;
         this.receiver = receiver;
@@ -41,7 +38,6 @@ public class Transection implements Serializable {
         this.type = type;
         this.currency = currency;
         this.description = description;
-        this.balanceAfterTransection = balanceAfterTransection;
         this.createdDate = createdDate;
     }
 
