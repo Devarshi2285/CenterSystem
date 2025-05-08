@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -25,6 +29,8 @@ public class AccountController {
     @Autowired
     private AccountRepo accountRepo;
 
+    @Autowired
+    private RestTemplate restTemplate;
 
     @GetMapping
     public ResponseEntity<List<AccountDTO>> getAccounts() {
@@ -50,4 +56,17 @@ public class AccountController {
 
 
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testAcc() {
+        String url = "https://frauddetection-r211.onrender.com/api/test"; // Replace with actual URL
+
+
+        ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+        response.getBody();
+
+
+        return ResponseEntity.ok("Accounts updated with fraud scores");
+    }
+
 }

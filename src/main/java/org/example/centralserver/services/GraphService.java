@@ -93,7 +93,9 @@ public class GraphService {
                     }
 
                     if (relationship.containsKey("createdDate") && !relationship.get("createdDate").isNull()) {
-                        linkDTO.setDate(LocalDateTime.parse(relationship.get("createdDate").asLocalDateTime().toString()));
+                        String dateStr = relationship.get("createdDate").asString(); // Read as String
+                        LocalDateTime createdDate = LocalDateTime.parse(dateStr);    // Parse to LocalDateTime
+                        linkDTO.setDate(createdDate);
                     }
 
                     links.add(linkDTO);
@@ -109,7 +111,7 @@ public class GraphService {
     }
 
     public List<Map<String, Object>> findNetworkByAccountNumberAndLevel(String accountNumber, int level) {
-        String query = "MATCH path = (a:Account {accountNumber: $accountNumber})-[r:TRANSACTS_WITH*1.." + level + "]-(related) RETURN path";
+        String query = "MATCH path = (a:Account {accountNumber: $accountNumber})-[r:TRANSACTION*1.." + level + "]-(related) RETURN path";
 
         return (List<Map<String, Object>>) neo4jClient.query(query)
                 .bindAll(Map.of("accountNumber", accountNumber))

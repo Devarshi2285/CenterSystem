@@ -66,52 +66,51 @@ public class TransactionService {
     private AccountService accountService;
 
 
-    @Scheduled(fixedRate = 6000000)
     public void processTransactions() throws Exception {
         System.out.println("Fetching transactions from bank API...");
 
-//        Instant startTime = Instant.now();
-//        // Fetch transactions from the bank's API
-//
-//        List<BankConfig> banks = bankConfigService.getAllBankConfig();
-//        List<List<Transection>>allTransactions = new ArrayList<>();
-//
-//        banks.forEach(bankConfig -> {
-//            List<Transection> transectionList = transformData.convertAndProcessData(bankConfig);
-//            if(Objects.equals(bankConfig.getDatabaseStructure(), "NOSQL")) {
-//                allTransactions.add(transectionList);
-//            }
-//
-//        });
-//
-//
-//        for (List<Transection> transectionList : allTransactions) {
-//            int totalTransactions = transectionList.size();
-//            int processedCount = 0;
-//
-//            //replace by with chunk
-//
-//            while (processedCount < totalTransactions) {
-//                List<CompletableFuture<Void>> batchFutures = new ArrayList<>();
-//
-//                // Process one batch
-//                int endIndex = Math.min(processedCount + BATCH_SIZE, totalTransactions);
-//                for (int i = processedCount; i < endIndex; i++) {
-//                    CompletableFuture<Void> future = transactionProcessorService.processTransactionAsync(transectionList.get(i), banks.get(0).getBankId());
-//                    batchFutures.add(future);
-//                }
-//
-//                // Wait for batch completion
-//                CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0])).join();
-//                processedCount = endIndex;
-//            }
-//
-//
-//
-//        }
-//
-//
-//        loadIntoDb();
+        Instant startTime = Instant.now();
+        // Fetch transactions from the bank's API
+
+        List<BankConfig> banks = bankConfigService.getAllBankConfig();
+        List<List<Transection>>allTransactions = new ArrayList<>();
+
+        banks.forEach(bankConfig -> {
+            List<Transection> transectionList = transformData.convertAndProcessData(bankConfig);
+            if(Objects.equals(bankConfig.getDatabaseStructure(), "NOSQL")) {
+                allTransactions.add(transectionList);
+            }
+
+        });
+
+
+        for (List<Transection> transectionList : allTransactions) {
+            int totalTransactions = transectionList.size();
+            int processedCount = 0;
+
+            //replace by with chunk
+
+            while (processedCount < totalTransactions) {
+                List<CompletableFuture<Void>> batchFutures = new ArrayList<>();
+
+                // Process one batch
+                int endIndex = Math.min(processedCount + BATCH_SIZE, totalTransactions);
+                for (int i = processedCount; i < endIndex; i++) {
+                    CompletableFuture<Void> future = transactionProcessorService.processTransactionAsync(transectionList.get(i), banks.get(0).getBankId());
+                    batchFutures.add(future);
+                }
+
+                // Wait for batch completion
+                CompletableFuture.allOf(batchFutures.toArray(new CompletableFuture[0])).join();
+                processedCount = endIndex;
+            }
+
+
+
+        }
+
+
+         loadIntoDb();
 
 
         if(!postDataToFlask(accountService.getaccounts()))
@@ -220,13 +219,21 @@ public class TransactionService {
     public boolean postDataToFlask(List<Account> accounts) {
         try {
             // Step 1: Convert to AccountDTOs
-            List<AccountDTOforCSV> dtoList = accounts.stream()
-                    .map(acc -> new AccountDTOforCSV(acc.getAccountNumber(), acc.getSuspicious()))
-                    .toList();
+            List<AccountDTOforCSV> dtoList = new ArrayList<>();
 
-            // Step 2: Wrap in AccountRequest
+            Set<Object> accountKeys = redisService.getSetMembers("accounts");
+            if (accountKeys != null) {
+                for (Object accountKey : accountKeys) {
+                    Account account = redisService.getObject(accountKey.toString(), Account.class);
+                    AccountDTOforCSV accountDTOforCSV=new AccountDTOforCSV(account.getAccountNumber() , account.getSuspicious());
+                    dtoList.add(accountDTOforCSV);
+                }
+            }
 
-            // Step 3: Prepare HTTP headers
+
+
+
+                    // Step 3: Prepare HTTP headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 

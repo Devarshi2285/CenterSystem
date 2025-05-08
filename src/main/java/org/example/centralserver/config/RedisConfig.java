@@ -16,17 +16,17 @@ import redis.clients.jedis.JedisPoolConfig;
 @Configuration
 public class RedisConfig {
 
-    @Value("${spring.data.redis.host}")
-    private String redisHost;
-
-    @Value("${spring.data.redis.port}")
-    private int redisPort;
-
-    @Value("${spring.data.redis.username:default}")
-    private String redisUsername;
-
-    @Value("${spring.data.redis.password}")
-    private String redisPassword;
+//    @Value("${spring.data.redis.host}")
+//    private String redisHost;
+//
+//    @Value("${spring.data.redis.port}")
+//    private int redisPort;
+//
+//    @Value("${spring.data.redis.username:default}")
+//    private String redisUsername;
+//
+//    @Value("${spring.data.redis.password}")
+//    private String redisPassword;
 
     @Bean
     public JedisPoolConfig jedisPoolConfig() {
@@ -38,19 +38,19 @@ public class RedisConfig {
         return poolConfig;
     }
 
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory(JedisPoolConfig jedisPoolConfig) {
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(redisHost);
-        redisConfig.setPort(redisPort);
-        redisConfig.setUsername(redisUsername);
-        redisConfig.setPassword(redisPassword);
-
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisConfig);
-        jedisConnectionFactory.setPoolConfig(jedisPoolConfig);
-
-        return jedisConnectionFactory;
-    }
+//    @Bean
+//    public RedisConnectionFactory redisConnectionFactory(JedisPoolConfig jedisPoolConfig) {
+//        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+//        redisConfig.setHostName(redisHost);
+//        redisConfig.setPort(redisPort);
+//        redisConfig.setUsername(redisUsername);
+//        redisConfig.setPassword(redisPassword);
+//
+//        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisConfig);
+//        jedisConnectionFactory.setPoolConfig(jedisPoolConfig);
+//
+//        return jedisConnectionFactory;
+//    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

@@ -155,7 +155,7 @@ public class AccountLoader {
             account.setSuspicious(true);
         }
 
-        if(account.getFreq() > 10) {
+        if(account.getFreq() > 30) {
             account.setSuspicious(true);
         }
 
